@@ -111,6 +111,42 @@ GROUP BY
 ORDER BY 
 	order_date
 
+	-- 3 Day Moving Average: Method 3 - With CTE
+
+WITH cte_avg_sales (order_date, sales)
+AS(
+SELECT 
+	order_date,
+	AVG(sales)
+FROM 
+	dbo.['superstore-data-2$']
+GROUP BY 
+	order_date)
+
+SELECT
+	order_date,
+	AVG(sales) OVER (ORDER BY order_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) as '3_day_moving_average'
+FROM 
+	cte_avg_sales
+ORDER BY 
+	order_date
+
+
+	-- 3 Day Moving Average: Method 4 - Alternative syntax
+
+SELECT 
+	order_date,
+    AVG(sales) OVER (ORDER BY order_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) as '3_day_moving_average'
+FROM (
+    SELECT 
+        order_date,
+        AVG(sales) as sales
+    FROM 
+        dbo.['superstore-data-2$']
+    GROUP BY 
+        order_date
+) AS subquery
+
 -- EXTRA > Breakdown of sales per customer
 
 SELECT 
