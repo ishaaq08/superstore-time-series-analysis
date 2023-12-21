@@ -80,7 +80,7 @@ ORDER BY
 
 -- Evaluate moving averages using window functions
 
-	-- 3 Day Moving Average: Method 1
+	-- 3 Day Moving Average: Method 1 - Without subquery
 
 SELECT 
 	order_date,
@@ -95,21 +95,21 @@ GROUP BY
 ORDER BY 
 	order_date
 
-	-- 3 Day Moving Average: Method 2
+	-- 3 Day Moving Average: Method 2 - With subquery
 
 SELECT 
-    order_date,
-    AVG(sales) OVER (PARTITION BY order_date ORDER BY order_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) as '3_day_moving_average'
+	order_date,
+	ROUND((avg_sales + COALESCE((LAG(avg_sales, 1) OVER (ORDER BY order_date)),0) + COALESCE((LAG(avg_sales, 2) OVER (ORDER BY order_date)),0))/3, 2) AS '3_day_moving_average'
+FROM
+(SELECT 
+	order_date,
+	AVG(sales) as avg_sales
 FROM 
-    dbo.['superstore-data-2$']
+	dbo.['superstore-data-2$']
 GROUP BY 
-    order_date
+	order_date) AS subquery
 ORDER BY 
-    order_date;
-
-
-
-
+	order_date
 
 -- EXTRA > Breakdown of sales per customer
 
